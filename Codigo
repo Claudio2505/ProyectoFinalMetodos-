@@ -1,0 +1,781 @@
+import numpy as np
+import math
+from sympy import det #En esta libreria podemos encontrar funciones de algebra lineal
+global opcion
+global opcion2
+global tol
+global n
+global p
+
+def f(x,opcion):
+    if opcion==1:
+        return x**2*math.cos(x)- 2*x
+    elif opcion==2:
+        q=(2/x**2)
+        w=math.exp(2+x)
+        return (6-q)*(w/4)+1
+    elif opcion==3:
+        return x**3 - 3*math.sin(x**2)+1
+    elif opcion==4:
+        return x**3 + 6*x**2 + 9.4*x + 2.5
+
+def df(x,opcion):
+    if opcion==1:
+        return (2*x*(math.cos(2*x) - x*math.sin(2*x)))
+    elif opcion==2:
+        e=math.exp(x+2)
+        r=2*x**3
+        return (e*(3*x**2 -x +2))/r
+    elif opcion==3:
+        return (3*x*(x - 2*math.cos(x**2)))
+    elif opcion==4:
+        return 3*x**2 + 12*x + 9.4
+
+def metodo_biseccion(f, a, b, tol=10**-4, n=100):
+  
+    """
+    Método de bisección
+    :param f: Funcion a la que se le intenta encontrar una solucion para la ecuacion f(x)=0, previamente definida
+    :param a: límite inferior
+    :param b: límite superior
+    :param tol: toleracia, criterio de parada
+    :param n: número máximo de iteraciones, criterio de parada
+    :return: solución exacta o aproximada, si tiene.
+    """
+    if f(a,opcion)*f(b,opcion) >= 0:  # el intevalo escogido no sirve
+        print('El intervalo no funciona, f(a)={:.2f} y f(b)={:.2f}'.format(f(a,opcion),f(b,opcion)))
+        return None
+    
+    e_abs = abs(b-a)
+    i = 1
+    while i <= n and e_abs > tol:
+        c = (a + b)/2  # punto medio
+        print('ite {:<2}: a_{:<2}={:.7f} , b_{:<2}={:.7f}, c_{:<2}={:.7f}'.format(i,i-1,a,i-1,b,i,c))
+        if f(c,opcion)==0:  # solución exacta encontrada
+            print('Solución encontrada x={:.7f}'. format(c))
+            return c
+        if f(a,opcion)*f(c,opcion)<0:  # escoger intervalo izquierdo
+            b = c
+            c_t = a
+        else:  # escoger intervalo derecho
+            a = c
+            c_t = b
+        e_abs = abs(c_t - c)  # error absoluto
+        if e_abs < tol:  # criterio de parada
+            print('Solución encontrada x= {:.7f}, iteraciones: {}'. format(c,i))
+            return c
+        i += 1
+    print ('Solución no encontrada, iteraciones agotadas: {}'.format(i-1))
+    return None
+
+def metodo_newton_raphson(f, df, p_0, tol=10**-4, n=100):
+    """
+    Método Newton Raphson
+    :param f: Funcion a la que se le intenta encontrar una solucion para la ecuacion f(x)=0, previamente definida
+    :param df: derivada de la función
+    :param p_0: semilla (punto inicial)
+    :param tol: toleracia, criterio de parada
+    :param n: número máximo de iteraciones, criterio de parada
+    :return: solución exacta o aproximada, si tiene.
+    """
+    print('ite {:<2}: p_{:<2}={:.7f}'.format(0,0,p_0))
+    e_abs = 1
+    i = 1
+    while i <= n:
+        
+        if df(p_0,opcion) == 0:  # división por cero
+            print('Solución no encontrara - df(x)=0')
+            return None
+        
+        p_1 = p_0 - (f(p_0,opcion))/(df(p_0,opcion))  # fórmula método
+        e_abs = abs(p_1-p_0)
+        print('ite {:<2}: p_{:<2}={:.7f}, e_abs={:.7f}'.format(i,i,p_1,e_abs))
+        
+        if e_abs < tol: #criterio de parada
+            print('Solución encotrada x={:.7f}, iteraciones: {}'.format(p_1,i))
+            return p_1
+        
+        p_0 = p_1
+        i += 1
+    print('Solución no encontrada, iteraciones agotadas: {}'.format(i-1))
+    return None
+
+def resultado(opcion,opcion2,tol,n):
+    global a
+    global b
+    if opcion2==1:
+        x=float(input("Ingrese un intervalo inicial: "))
+        metodo_newton_raphson(f,df,x,tol,n)
+    elif opcion2==2:
+        a=float(input("Ingrese el valor de a del intervalo: "))
+        b=float(input("Ingrese el valor de b del intervalo: "))
+        metodo_biseccion(f, a, b, tol, n)
+
+
+def opcion1():
+    global opcion
+    global opcion2
+    opciones=1
+    aux2=0
+    while aux2!=opciones:
+        print("Ingrese la opcion de la función que requiera")
+        print("1-  x^2 *cos(x) -2x")
+        print("2- (6-(2/x^2))*(e^(2+x)/4) +1")
+        print("3- x^3 -3*sen(x^2)+1")
+        print("4- x^3 +6x^2 +9.4x +2.5")
+        aux=0
+        while aux != opciones:
+            opcion=int(input("Ingrese una opcion: "))
+            if opcion>=5 or opcion<1:
+                print("Digite una opcion válida")
+                aux=0
+            else:
+                aux=1
+
+        print("Ingrese la opcion con el método que desea realizar")
+        print("1-Newton")
+        print("2-Bisección")
+        aux=0
+        while aux != opciones:
+            opcion2=int(input("Ingrese una opcion: "))
+            if opcion2>2 or opcion2<1:
+                print("Digite una opcion válida")
+                aux=0
+            else:
+                aux=1
+        tol=float(input("Ingrese la tolerancia deseada: "))
+        n=int(input("Ingrese el número de iteraciones máximas: "))
+        resultado(opcion,opcion2,tol,n)
+        print("1-Para salir del programa")
+        print("2-Para continuar en el programa")
+        aux2=0
+        while (aux2!=1):
+            aux2=int(input("Qué opcion escoge?"))
+            if (aux2==1):
+                break
+            elif(aux2==2):
+                break
+            else:
+                print("Digite una opcion válida")
+
+def programa2():
+    aux3=0
+    """Este ciclo se valida en la línea 154, nos permite saber si el usuario 
+    quiere seguir en el programa ó no. Funciona en conjunto con el ciclo while
+    de la línea 152"""
+    while(aux3!=1):
+        p=1
+        while(p!=0):
+            """El usuario ingresa el numero de fila y columnas"""
+            fila=int(input("Digite el numero de filas: "))
+            columna=int(input("Digite el numero de columnas: "))
+            """En esta parte se valida que la dimension de la matriz sea cuadrada"""
+            if(fila==columna):
+                p=0
+            else:
+                print("La matriz debe ser de orden NxN")
+        
+        """Aquí es cuando se crea la matriz usando listas, sin definir la dimensión de la matriz todavía"""
+        matriz=[]
+
+        """Aquí es cuando se crea el vector independiente usando listas, sin definir la dimensión del vector todavía"""
+        matriz1=[]
+
+        """En este ciclo es cuando se crea la matriz con base a las dimensiones columnas digitadas"""
+        """Se crea usando sublistas"""
+        for i in range(columna):
+            matriz.append([0]*columna)
+
+        """En este ciclo es cuando se crea el vector independiente con base a las filas digitadas"""
+        """Se crea usando sublistas"""
+        for i in range(fila):
+            matriz1.append([0]*fila)
+
+        """En este ciclo empieza el llenado de la matriz cuadrada ingresando numeros de tipo flotante"""
+        for i in range(fila):
+            for j in range(columna):
+                matriz[i][j]=float(input("Digite el valor en la posicion {} {}: ".format(i,j)))
+
+        
+        """En este ciclo empieza el llenado del vector independiente ingresando numeros de tipo flotante"""
+        for i in range(fila):
+            matriz1[i]=float(input("Digite el valor en la posicion {}: ".format(i)))
+
+        """Se imprime la matriz cuadrada"""
+        print("La matriz es")
+        print(matriz)
+
+        """Se imprime el vector independiente"""
+        print("El vector independiente es")
+        print(matriz1)
+
+        """El usuario tendra dos opciones"""
+        print("1-SI")
+        print("2-NO")
+
+        aux=0
+        while(aux<1):
+            """Aquí es cuando se le pregunta al usuario si son correctos los valores de la matriz cuadrada"""
+            opcion=int(input("Los datos ingresados de la matriz son correctos?"))
+            if(opcion==1):
+                """Sí son correctos los valores se imprime la matriz cuadrada"""
+                print("Su matriz es: ")
+                print(matriz)
+                aux=1
+            elif (opcion==2):
+                """Si no son correctos los datos entonces el usuario tiene que escribir 
+                la posición donde se encuentra el valor a corregir"""
+                print("DIGITE LA POSICION A CORREGIR")
+                aux2=1
+                while(aux2!=0):
+                    """En este ciclo es cuando el usuario tiene que escribir la pocision 
+                    correctamente"""
+                    corregirfila=int(input("Fila: "))
+                    corregircolumna=int(input("Columna: "))
+                    """Sí el usuario escoge una fila incorrecta, por ejemplo si el usuario
+                    escribe la pocisión 5 de una matriz que tiene 4 filas ó si escribe que quiere
+                    corregir la columna -1 de una matriz que tiene 2 columnas"""
+                    if(corregirfila>fila-1 or corregirfila<0):
+                        aux2=1
+                        print("VUELVE A ESCOGER LA FILA")
+                    elif(corregircolumna>columna-1 or corregirfila<0):
+                        aux2=1
+                        print("VUELVE A ESCOGER LA COLUMNA")
+                    else:
+                        aux2=0
+                
+                """En este ciclo for es cuando se busca la posición y se corrige el valor"""
+                for i in range(fila):
+                    for j in range(columna):
+                        if(i==corregirfila and j==corregircolumna):
+                            nuevovalor=float(input("Digite nuevo valor: "))
+                            matriz[i][j]=nuevovalor
+                print("La nueva matriz es: ")
+                print(matriz)
+                aux=2
+            else:
+                """Es cuando el usuario digita otra opcion la cuál es distinta del 0 y 1"""
+                print("VUELVE A DIGITAR SU OPCION")
+                aux=0
+        
+        """Lo anterior escrito también aplica para el vector independiente"""
+        aux6=0
+        while(aux6!=1):
+            opcion2=int(input("Los datos ingresados del vector independiente son correctos?"))
+            if(opcion2==1):
+                print("Su vector es: ")
+                print(matriz1)
+                aux6=1
+            elif(opcion2==2):
+                print("DIGITE LA POSICION A CORREGIR")
+                aux5=1
+                while(aux5!=0):
+                    corregirfila1=int(input("Fila: "))
+                    if(corregirfila1>fila-1 or corregirfila1<0):
+                        aux5=1
+                        print("VULVE A ESCOGER LA FILA")
+                    else:
+                        aux5=0
+                    
+                for i in range(fila):
+                    if(i==corregirfila1):
+                        nuevovalor1=float(input("Digite nuevo valor: "))
+                        matriz1[i]=nuevovalor1
+                        print("El nuevo vector es: ")
+                        print(matriz1)
+                aux6=1
+            else:
+                print("VUELVE A DIGITAR SU OPCION")
+                aux=0
+
+        """En la línea 131 es cuando se calcula el determinante"""
+        det=np.linalg.det(matriz)
+        
+        """Sí el determinate no es 0"""
+        if(det!=0.0):
+            #solucion=np.linalg.solve(matriz,matriz1)
+            """Se imprime el resultado del determinante en pantalla"""
+            print("El determinante es {}".format(det))
+            #print("La solucion es: ")
+            #print(solucion)
+        else:
+            """Sí el determinante es 0 entonces se imprime en pantalla que no tiene solución"""
+            print("El sistema no tiene solucion")
+        
+        """El usuario tendrá 2 opciones en el sistema"""
+        print("0-PARA SEGUIR EN EL SISTEMA")
+        print("1-PARA SALIR DEL SISTEMA")
+        aux4=1
+        """Este ciclo es para validar las opciones del usuario"""
+        while(aux4!=0):
+            """El usuario deberá digitar cualquiera de las 2 opciones"""
+            aux3=int(input("Desea salir del sistema?"))
+            if(aux3==1):
+                """Sí el usuario digita 1, entonces decide salir del ciclo while
+                línea 152 y del ciclo while de la línea 8"""
+                print("SALIENDO DEL SISTEMA....")
+                aux4=0
+            elif(aux3==0):
+                """Sí el usuario escribe el 0, entonces sale de este ciclo while
+                línea 152"""
+                aux4=0
+            else:
+                """Sí el usuario escribe otra opción se desplegara 
+                el mensaje hasta que digite una opcion válida"""
+                print("VUELVE A DIGITAR SU OPCION")
+                aux4=2
+
+
+def opcion3():
+    aux3=0
+    """Este ciclo se valida en la línea 154, nos permite saber si el usuario 
+    quiere seguir en el programa ó no. Funciona en conjunto con el ciclo while
+    de la línea 152"""
+    while(aux3!=1):
+        p=1
+        while(p!=0):
+            """El usuario ingresa el numero de fila y columnas"""
+            fila=int(input("Digite el numero de filas: "))
+            columna=int(input("Digite el numero de columnas: "))
+            """En esta parte se valida que la dimension de la matriz sea cuadrada"""
+            if(fila==columna):
+                p=0
+            else:
+                print("La matriz debe ser de orden NxN")
+        
+        """Aquí es cuando se crea la matriz usando listas, sin definir la dimensión de la matriz todavía"""
+        matriz=[]
+
+        """Aquí es cuando se crea el vector independiente usando listas, sin definir la dimensión del vector todavía"""
+        matriz1=[]
+
+        """En este ciclo es cuando se crea la matriz con base a las dimensiones columnas digitadas"""
+        """Se crea usando sublistas"""
+        for i in range(columna):
+            matriz.append([0]*columna)
+
+        """En este ciclo es cuando se crea el vector independiente con base a las filas digitadas"""
+        """Se crea usando sublistas"""
+        for i in range(fila):
+            matriz1.append([0]*fila)
+
+        """En este ciclo empieza el llenado de la matriz cuadrada ingresando numeros de tipo flotante"""
+        for i in range(fila):
+            for j in range(columna):
+                matriz[i][j]=float(input("Digite el valor en la posicion {} {}: ".format(i,j)))
+
+        
+        """En este ciclo empieza el llenado del vector independiente ingresando numeros de tipo flotante"""
+        for i in range(fila):
+            matriz1[i]=float(input("Digite el valor en la posicion {}: ".format(i)))
+
+        """Se imprime la matriz cuadrada"""
+        print("La matriz es")
+        print(matriz)
+
+        """Se imprime el vector independiente"""
+        print("El vector independiente es")
+        print(matriz1)
+
+        """El usuario tendra dos opciones"""
+        print("1-SI")
+        print("2-NO")
+
+        aux=0
+        while(aux<1):
+            """Aquí es cuando se le pregunta al usuario si son correctos los valores de la matriz cuadrada"""
+            opcion=int(input("Los datos ingresados de la matriz son correctos?"))
+            if(opcion==1):
+                """Sí son correctos los valores se imprime la matriz cuadrada"""
+                print("Su matriz es: ")
+                print(matriz)
+                aux=1
+            elif (opcion==2):
+                """Si no son correctos los datos entonces el usuario tiene que escribir 
+                la posición donde se encuentra el valor a corregir"""
+                print("DIGITE LA POSICION A CORREGIR")
+                aux2=1
+                while(aux2!=0):
+                    """En este ciclo es cuando el usuario tiene que escribir la pocision 
+                    correctamente"""
+                    corregirfila=int(input("Fila: "))
+                    corregircolumna=int(input("Columna: "))
+                    """Sí el usuario escoge una fila incorrecta, por ejemplo si el usuario
+                    escribe la pocisión 5 de una matriz que tiene 4 filas ó si escribe que quiere
+                    corregir la columna -1 de una matriz que tiene 2 columnas"""
+                    if(corregirfila>fila-1 or corregirfila<0):
+                        aux2=1
+                        print("VUELVE A ESCOGER LA FILA")
+                    elif(corregircolumna>columna-1 or corregirfila<0):
+                        aux2=1
+                        print("VUELVE A ESCOGER LA COLUMNA")
+                    else:
+                        aux2=0
+                
+                """En este ciclo for es cuando se busca la posición y se corrige el valor"""
+                for i in range(fila):
+                    for j in range(columna):
+                        if(i==corregirfila and j==corregircolumna):
+                            nuevovalor=float(input("Digite nuevo valor: "))
+                            matriz[i][j]=nuevovalor
+                print("La nueva matriz es: ")
+                print(matriz)
+                aux=2
+            else:
+                """Es cuando el usuario digita otra opcion la cuál es distinta del 0 y 1"""
+                print("VUELVE A DIGITAR SU OPCION")
+                aux=0
+        
+        """Lo anterior escrito también aplica para el vector independiente"""
+        aux6=0
+        while(aux6!=1):
+            opcion2=int(input("Los datos ingresados del vector independiente son correctos?"))
+            if(opcion2==1):
+                print("Su vector es: ")
+                print(matriz1)
+                aux6=1
+            elif(opcion2==2):
+                print("DIGITE LA POSICION A CORREGIR")
+                aux5=1
+                while(aux5!=0):
+                    corregirfila1=int(input("Fila: "))
+                    if(corregirfila1>fila-1 or corregirfila1<0):
+                        aux5=1
+                        print("VULVE A ESCOGER LA FILA")
+                    else:
+                        aux5=0
+                    
+                for i in range(fila):
+                    if(i==corregirfila1):
+                        nuevovalor1=float(input("Digite nuevo valor: "))
+                        matriz1[i]=nuevovalor1
+                        print("El nuevo vector es: ")
+                        print(matriz1)
+                aux6=1
+            else:
+                print("VUELVE A DIGITAR SU OPCION")
+                aux=0
+
+        """En la línea 134 es cuando se calcula el determinante"""
+        det=np.linalg.det(matriz)
+        
+        """Sí el determinate no es 0"""
+        if(det!=0.0):
+            #solucion=np.linalg.solve(matriz,matriz1)
+            """Se imprime el resultado del determinante en pantalla"""
+            print("El determinante es {}".format(det))
+            #print("La solucion es: ")
+            #print(solucion)
+            """En este ciclo es cuando se revisa si la matriz es EDD comparando
+            el pivote con la suma absoluta de los elementos que no son pivote"""
+            for i in range(fila):
+                suma=0
+                aux7=0
+                for j in range(columna):
+                    """Se selecciona el pivote"""
+                    if(i==j):
+                        pivote=matriz[i][j]
+                    else:
+                        """Se suman los elementos que no son pivotes"""
+                        suma=suma+abs(matriz[i][j])
+                if(pivote<suma):
+                    """Se compara si el pivote es menor que la suma de los elementos"""
+                    print("La convergencia no se garantiza por no tratarse de un sistema EDD")
+                    """El break nos saca del ciclo for"""
+                    aux7=0
+                    break
+                elif(pivote==suma):
+                    aux7=aux7+1
+                else:
+                    aux7=aux7+1
+            """Se usará Jacobi cuando la matriz sea EDD, por eso el uso de variables auxiliares (aux7)
+            , este tiene que ser diferente de 0 para que calcule Jacobi. Si es igual a 0 quiere decir 
+            que la matriz no es EDD"""
+            if(aux7!=0):
+                """Se crea la matriz T, se usará la forma x_k+1=T*x_k +C"""
+                matrizT=[]
+                for i in range(columna):
+                    matrizT.append([0]*columna)
+                """La matriz T va a tener 0 en la diagonal"""
+                for i in range(fila):
+                    for j in range(columna):
+                        if(i==j):
+                            matrizT[i][j]=0
+                        else:
+                            """Los elementos de la fila que no sean pivotes se dividiran entre el pivote
+                            de cada fila y se le cambiara el signo, es decir se multiplicara por -1"""
+                            pivote=matriz[i][i]
+                            matrizT[i][j]=-(matriz[i][j]/pivote)
+                """El vector C es el vector independiente pero dividida entre el pivote"""
+                vectorC=[]
+                for i in range(fila):
+                    vectorC.append([0]*fila)
+
+                for i in range(fila):
+                        """Se dividira cada elemento del vector independiente entre el pivote"""
+                        pivote=matriz[i][i]
+                        vectorC[i]=(matriz1[i]/pivote)
+                
+                print("La matriz T es: ")
+                print(matrizT)
+                print("El vector C es: ")
+                print(vectorC)
+                """Se pedira un vector inicial X"""
+                vectorX=[]
+                print("Digite el vector inicial")
+
+                for i in range(fila):
+                    vectorX.append([0]*fila)
+                """El usuario digita el vector inicial"""
+                for i in range(fila):
+                    vectorX[i]=float(input("X_{}= ".format(i)))
+
+                print("Su vector inicial es {}".format(vectorX))
+                """Se le pedirá tambien un numero de iteraciones maximas con una tolerancia deseada"""
+                iteraciones=int(input("Digite un numero maximo de iteraciones: "))
+                tolerancia=float(input("Digite una tolerancia: "))
+                
+                """Se crea el vector x_k+1, el cual almacenara los valores nuevos calculados"""
+                vectorXnuevo=[]
+                for i in range(fila):
+                    vectorXnuevo.append([0]*fila)
+
+                k=0
+                """Aquí es donde empieza el método de Jacobi"""
+                for i in range(iteraciones):
+                    """Se calcula X_k+1 = Tx + C"""
+                    vectorXnuevo=np.dot(matrizT,vectorX)+vectorC
+                    """Se calcula la norma espectral usando ||X_k+1 - X_k ||"""
+                    normaEspectral=max(abs(vectorXnuevo-vectorX))
+                    """Se imprime X_k+1 y la norma espectral"""
+                    print("x_{}={} |Norma espectral {}={} ".format(k,vectorXnuevo,k,normaEspectral))
+                    """El vector X se almacenará con los valores de X_k+1"""
+                    vectorX=vectorXnuevo
+                    k=k+1
+                    if(normaEspectral<tolerancia):
+                        """Esto es por si se alcanza la tolerancia antes que el numero de iteraciones"""
+                        print("Se alcanzo la tolerancia deseada")
+                        break                 
+                    elif(k==iteraciones):
+                        print("Se alcanzo el numero de iteraciones")
+
+                """Aquí se imprime la solución obtenida"""
+                print("La solucion obtenida es {}".format(vectorXnuevo))
+            else:
+                print("1-SI 2-NO")
+                opcion3=int(input("Desea continuar? "))
+                while(opcion3!=2):
+                    if(opcion3==1):
+                        """Se crea la matriz T, se usará la forma x_k+1=T*x_k +C"""
+                        matrizT=[]
+                        for i in range(columna):
+                            matrizT.append([0]*columna)
+                        """La matriz T va a tener 0 en la diagonal"""
+                        for i in range(fila):
+                            for j in range(columna):
+                                if(i==j):
+                                    matrizT[i][j]=0
+                                else:
+                                    """Los elementos de la fila que no sean pivotes se dividiran entre el pivote
+                                    de cada fila y se le cambiara el signo, es decir se multiplicara por -1"""
+                                    pivote=matriz[i][i]
+                                    matrizT[i][j]=-(matriz[i][j]/pivote)
+                        """El vector C es el vector independiente pero dividida entre el pivote"""
+                        vectorC=[]
+                        for i in range(fila):
+                            vectorC.append([0]*fila)
+
+                        for i in range(fila):
+                                """Se dividira cada elemento del vector independiente entre el pivote"""
+                                pivote=matriz[i][i]
+                                vectorC[i]=(matriz1[i]/pivote)
+                        
+                        print("La matriz T es: ")
+                        print(matrizT)
+                        print("El vector C es: ")
+                        print(vectorC)
+                        """Se pedira un vector inicial X"""
+                        vectorX=[]
+                        print("Digite el vector inicial")
+
+                        for i in range(fila):
+                            vectorX.append([0]*fila)
+                        """El usuario digita el vector inicial"""
+                        for i in range(fila):
+                            vectorX[i]=float(input("X_{}= ".format(i)))
+
+                        print("Su vector inicial es {}".format(vectorX))
+                        """Se le pedirá tambien un numero de iteraciones maximas con una tolerancia deseada"""
+                        iteraciones=int(input("Digite un numero maximo de iteraciones: "))
+                        tolerancia=float(input("Digite una tolerancia: "))
+                        
+                        """Se crea el vector x_k+1, el cual almacenara los valores nuevos calculados"""
+                        vectorXnuevo=[]
+                        for i in range(fila):
+                            vectorXnuevo.append([0]*fila)
+
+                        k=0
+                        """Aquí es donde empieza el método de Jacobi"""
+                        for i in range(iteraciones):
+                            """Se calcula X_k+1 = Tx + C"""
+                            vectorXnuevo=np.dot(matrizT,vectorX)+vectorC
+                            """Se calcula la norma espectral usando ||X_k+1 - X_k ||"""
+                            normaEspectral=max(abs(vectorXnuevo-vectorX))
+                            """Se imprime X_k+1 y la norma espectral"""
+                            print("x_{}={} |Norma espectral {}={} ".format(k,vectorXnuevo,k,normaEspectral))
+                            """El vector X se almacenará con los valores de X_k+1"""
+                            vectorX=vectorXnuevo
+                            k=k+1
+                            if(normaEspectral<tolerancia):
+                                """Esto es por si se alcanza la tolerancia antes que el numero de iteraciones"""
+                                print("Se alcanzo la tolerancia deseada")
+                                break
+                            elif(k==iteraciones):
+                                print("Se alcanzo el numero de iteraciones")
+                        """Aquí se imprime la solución obtenida"""
+                        print("La solucion obtenida es {}".format(vectorXnuevo))
+                        opcion3=2
+                    elif(opcion3==2):
+                        print("Saliendo....")
+                    else:
+                        print("Digite una opcion valida")
+        else:
+            """Sí el determinante es 0 entonces se imprime en pantalla que no tiene solución"""
+            print("El sistema no tiene solucion")
+                 
+        
+        """El usuario tendrá 2 opciones en el sistema"""
+        print("0-PARA SEGUIR EN EL SISTEMA")
+        print("1-PARA SALIR DEL SISTEMA")
+        aux4=1
+        """Este ciclo es para validar las opciones del usuario"""
+        while(aux4!=0):
+            """El usuario deberá digitar cualquiera de las 2 opciones"""
+            aux3=int(input("Desea salir del sistema?"))
+            if(aux3==1):
+                """Sí el usuario digita 1, entonces decide salir del ciclo while
+                línea 248 y del ciclo while de la línea 8"""
+                print("SALIENDO DEL SISTEMA....")
+                aux4=0
+            elif(aux3==0):
+                """Sí el usuario escribe el 0, entonces sale de este ciclo while
+                línea 248"""
+                aux4=0
+            else:
+                """Sí el usuario escribe otra opción se desplegara 
+                el mensaje hasta que digite una opcion válida"""
+                print("VUELVE A DIGITAR SU OPCION")
+                aux4=2
+
+def metodoPotencias():
+    aux=0
+    while(aux!=1):
+        orden=int(input("Ingrese el orden de la matriz: "))
+        matriz=[]
+        for i in range(orden):
+            matriz.append(orden*[0])
+
+        for i in range(orden):
+            for j in range(orden):
+                matriz[i][j]=float(input("Digite el valor en la posicion {} {}: ".format(i,j)))
+
+        vectorInicial=[]
+        for i in range(orden):
+            vectorInicial.append(orden*[0])
+
+        for i in range(orden):
+            vectorInicial[i]=float(input("Ingrese el valor del vector inicial en la posicion {}: ".format(i)))
+
+        tol=float(input("Ingrese una tolerancia: "))
+        iteraciones=int(input("Ingrese una máxima de iteraciones: "))
+        k=0
+        
+        while(iteraciones>k):
+            ax=np.dot(matriz,vectorInicial)
+            lambdak=max(abs(ax))
+            vectorInicial_siguiente=np.dot((1/lambdak),ax)
+            if(k==0):
+                lambdak_siguiente=lambdak
+                print("|k={}|x_k={}|Ax_k={}|lambda={}|x_k+1={}".format(k,vectorInicial,ax,lambdak,vectorInicial_siguiente))   
+            else:
+                error=abs(lambdak - lambdak_siguiente)
+                lambdak_siguiente=lambdak
+                if(error<=tol):
+                    print("|k={}|x_k={}|Ax_k={}|lambda={}|x_k+1={}|Error={}".format(k,vectorInicial,ax,lambdak,vectorInicial_siguiente,error))
+                    break
+                else:
+                    print("|k={}|x_k={}|Ax_k={}|lambda={}|x_k+1={}|Error={}".format(k,vectorInicial,ax,lambdak,vectorInicial_siguiente,error))
+        
+            vectorInicial=vectorInicial_siguiente
+            k=k+1
+        print("Los valores propios son {}".format(vectorInicial))
+        print(" ")
+        print("0-PARA SEGUIR EN EL SISTEMA")
+        print("1-PARA SALIR DEL SISTEMA")
+        aux4=1
+        """Este ciclo es para validar las opciones del usuario"""
+        while(aux4!=0):
+            """El usuario deberá digitar cualquiera de las 2 opciones"""
+            aux3=int(input("Desea salir del sistema?"))
+            if(aux3==1):
+                """Sí el usuario digita 1, entonces decide salir del ciclo while
+                línea 248 y del ciclo while de la línea 8"""
+                print("SALIENDO DEL SISTEMA....")
+                aux4=0
+                aux=1
+            elif(aux3==0):
+                """Sí el usuario escribe el 0, entonces sale de este ciclo while
+                línea 248"""
+                aux4=0
+            else:
+                """Sí el usuario escribe otra opción se desplegara 
+                el mensaje hasta que digite una opcion válida"""
+                print("VUELVE A DIGITAR SU OPCION")
+                aux4=2
+
+
+def opcionesMenu():
+    print("Bienvenido al menu principal")
+    print("Digite el programa que quiera que se realice")
+    print("1- Programa 1")
+    print("2- Programa 2")
+    print("3- Programa 3")
+    print("4- Programa 4")
+    print("5- Salir del menu")
+
+def validar():
+    aux=int(input("Qué desea realizar?"))
+    return aux
+   
+def menuPrincipal():
+    opcionesMenu()
+    salida=0
+    while(salida!=5):
+        des=validar()
+        if(des==1):
+            opcion1()
+            opcionesMenu()
+            salida=0
+        elif(des==2):
+            programa2()
+            opcionesMenu()
+            salida=0
+        elif(des==3):
+            opcion3()
+            opcionesMenu()
+            salida=0
+        elif(des==4):
+            metodoPotencias()
+            opcionesMenu()
+            salida=0
+        elif(des==5):
+            print("Saliendo del menu.....")
+            salida=5
+        else:
+            print("Ingrese una opcion correcta")
+            salida=0
+            
+    
+#Se ejecuta el menú
+menuPrincipal()
+
